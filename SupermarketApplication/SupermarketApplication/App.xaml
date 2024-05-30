@@ -1,0 +1,450 @@
+﻿<Application x:Class="SupermarketApplication.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SupermarketApplication.Helpers" xmlns:localConverter="clr-namespace:SupermarketApplication.Converters"
+             xmlns:viewmodels="clr-namespace:SupermarketApplication.ViewModels" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             StartupUri="Views\LoginWindow.xaml">
+
+    <Application.Resources>
+        <!-- Category Template -->
+        <viewmodels:CategoriesVM x:Key="CategoryVM"/>
+        <viewmodels:ManufacturerVM x:Key="ManufacturerVM"/>
+        <viewmodels:ProductVM x:Key="ProductVM"/>
+        <viewmodels:UsernameVM x:Key="UsernameVM"/>
+        <viewmodels:ReceiptVM x:Key="ReceiptVM"/>
+        <viewmodels:ReceiptDetailVM x:Key="ReceiptDetailVM"/>
+        <viewmodels:StockVM x:Key="StockVM"/>
+        <viewmodels:UnitOfMeasureViewModel x:Key="UnitOfMeasureVM"/>
+        <localConverter:IsNewStockConverter x:Key="IsNewStockConverter"/>
+
+        <!-- Category Template -->
+        <DataTemplate x:Key="CategoryTemplate">
+            <StackPanel DataContext="{StaticResource CategoryVM}" Margin="10">
+                <StackPanel.Resources>
+                    <localConverter:CategoryConvert x:Key="CategoryConvert" />
+                </StackPanel.Resources>
+
+                <!-- Form Fields -->
+                <GroupBox Header="Category Details" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <Label Content="Category Name" />
+                        <TextBox Name="txtName" Width="200" HorizontalAlignment="Left" Text ="{Binding ElementName=categoryGrid, Path=SelectedItem.CategoryName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Buttons -->
+                <WrapPanel Margin="0,0,0,10">
+                    <Button Content="Adaugă" Command="{Binding AddCommand}" Margin="5">
+                        <Button.CommandParameter>
+                            <MultiBinding Converter="{StaticResource CategoryConvert}">
+                                <Binding ElementName="txtName" Path="Text"/>
+                            </MultiBinding>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Content="Modifică" Command="{Binding UpdateCommand}" CommandParameter="{Binding ElementName=categoryGrid, Path=SelectedItem}" Margin="5"/>
+
+                    <Button Content="Șterge" Command="{Binding DeleteCommand}" CommandParameter="{Binding ElementName=categoryGrid, Path=SelectedItem}" Margin="5"/>
+                </WrapPanel>
+
+                <!-- DataGrid -->
+                <GroupBox Header="Categories List">
+                    <DataGrid Name="categoryGrid" Margin="10" AutoGenerateColumns="False" Height="250"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible" ItemsSource="{Binding CategoryList}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Category" Binding="{Binding CategoryName}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- Error Message -->
+                <Label Name="lblMessage" Content="{Binding ErrorMessage}" Height="30" FontSize="15" Foreground="Red" HorizontalAlignment="Center" Margin="10"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Manufacturer Template -->
+        <DataTemplate x:Key="ManufacturerTemplate">
+            <StackPanel DataContext="{StaticResource ManufacturerVM}" Margin="10">
+                <StackPanel.Resources>
+                    <localConverter:ManufacturerConvert x:Key="ManufacturerConvert" />
+                </StackPanel.Resources>
+
+                <!-- Form Fields -->
+                <GroupBox Header="Manufacturer Details" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <Label Content="Manufacturer Name" />
+                        <TextBox Name="txtManufacturerName" Width="200" HorizontalAlignment="Left" Text ="{Binding ElementName=manufacturerGrid, Path=SelectedItem.ManufacturerName, UpdateSourceTrigger=PropertyChanged}" />
+                        <Label Content="Country" />
+                        <TextBox Name="txtCountry" Width="200" HorizontalAlignment="Left" Text="{Binding ElementName=manufacturerGrid, Path=SelectedItem.Country, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Buttons -->
+                <WrapPanel Margin="0,0,0,10">
+                    <Button Content="Adaugă" Command="{Binding AddCommand}" Margin="5">
+                        <Button.CommandParameter>
+                            <MultiBinding Converter="{StaticResource ManufacturerConvert}">
+                                <Binding ElementName="txtManufacturerName" Path="Text"/>
+                                <Binding ElementName="txtCountry" Path="Text"/>
+                            </MultiBinding>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Content="Modifică" Command="{Binding UpdateCommand}" CommandParameter="{Binding ElementName=manufacturerGrid, Path=SelectedItem}" Margin="5"/>
+                    <Button Content="Șterge" Command="{Binding DeleteCommand}" CommandParameter="{Binding ElementName=manufacturerGrid, Path=SelectedItem}" Margin="5"/>
+                </WrapPanel>
+
+                <!-- DataGrid -->
+                <GroupBox Header="Manufacturers List">
+                    <DataGrid Name="manufacturerGrid" Margin="10" AutoGenerateColumns="False" Height="250"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible" ItemsSource="{Binding ManufacturerList}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Manufacturer" Binding="{Binding ManufacturerName}" />
+                            <DataGridTextColumn Header="Country" Binding="{Binding Country}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- Error Message -->
+                <Label Name="lblMessage" Content="{Binding ErrorMessage}" Height="30" FontSize="15" Foreground="Red" HorizontalAlignment="Center" Margin="10"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Stock Template -->
+        <DataTemplate x:Key="StockTemplate">
+            <StackPanel DataContext="{StaticResource StockVM}" Margin="10">
+                <StackPanel.Resources>
+                    <localConverter:StockConvert x:Key="StockConvert" />
+                </StackPanel.Resources>
+
+                <!-- Form Fields -->
+                <GroupBox Header="Stock Details" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <Label Content="Product" />
+                        <ComboBox x:Name="cbProduct"
+                          Width="200"
+                          HorizontalAlignment="Left"
+                          DisplayMemberPath="ProductName"
+                          SelectedValuePath="ProductID"
+                          ItemsSource="{Binding Source={StaticResource ProductVM}, Path=ProductList}"
+                          SelectedValue="{Binding SelectedItem.ProductID, ElementName=stockGrid, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,0,0,10"/>
+                        <Label Content="Quantity" />
+                        <TextBox x:Name="quantityTextBox"
+                         Width="200"
+                         HorizontalAlignment="Left"
+                         Text="{Binding SelectedItem.Quantity, ElementName=stockGrid, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,10"/>
+                        <Label Content="Unit of Measure" />
+                        <ComboBox x:Name="cbUnitOfMeasure"
+                          Width="200"
+                          HorizontalAlignment="Left"
+                          ItemsSource="{Binding Source={StaticResource UnitOfMeasureVM}, Path=UnitOfMeasureList}"
+                          SelectedValue="{Binding SelectedItem.Unit, ElementName=stockGrid, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,0,0,10"/>
+                        <Label Content="Supply Date" />
+                        <DatePicker x:Name="supplyDatePicker"
+                            SelectedDate="{Binding SelectedItem.SupplyDate, ElementName=stockGrid, UpdateSourceTrigger=PropertyChanged}"
+                            Width="200" Margin="0,0,0,10"/>
+                        <Label Content="Expiry Date" />
+                        <DatePicker x:Name="expiryDatePicker"
+                            SelectedDate="{Binding SelectedItem.ExpiryDate, ElementName=stockGrid, UpdateSourceTrigger=PropertyChanged}"
+                            Width="200" Margin="0,0,0,10"/>
+                        <Label Content="Purchase Price" />
+                        <xctk:DecimalUpDown x:Name="purchasePriceNumericUpDown"
+                                    Value="{Binding SelectedItem.PurchasePrice, ElementName=stockGrid, UpdateSourceTrigger=PropertyChanged, Mode=OneTime}"
+                                    Width="200" Margin="0,0,0,10" IsEnabled="{Binding SelectedItem.StockID, Converter={StaticResource IsNewStockConverter}}"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Buttons -->
+                <WrapPanel Margin="0,0,0,10">
+                    <Button Content="Add" Command="{Binding AddCommand}" Margin="5">
+                        <Button.CommandParameter>
+                            <MultiBinding Converter="{StaticResource StockConvert}">
+                                <Binding ElementName="cbProduct" Path="SelectedValue"/>
+                                <Binding ElementName="quantityTextBox" Path="Text"/>
+                                <Binding ElementName="supplyDatePicker" Path="SelectedDate"/>
+                                <Binding ElementName="expiryDatePicker" Path="SelectedDate"/>
+                                <Binding ElementName="purchasePriceNumericUpDown" Path="Value"/>
+                                <Binding ElementName="cbUnitOfMeasure" Path="SelectedValue"/>
+                            </MultiBinding>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Content="Update" Command="{Binding UpdateCommand}" CommandParameter="{Binding SelectedItem, ElementName=stockGrid}" Margin="5"/>
+                    <Button Content="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedItem, ElementName=stockGrid}" Margin="5"/>
+                </WrapPanel>
+
+                <!-- DataGrid -->
+                <GroupBox Header="Stock List">
+                    <DataGrid x:Name="stockGrid" Margin="10" AutoGenerateColumns="False" Height="250"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible" ItemsSource="{Binding StockList}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Product" Binding="{Binding Product.ProductName}" />
+                            <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}" />
+                            <DataGridTextColumn Header="Unit of Measure" Binding="{Binding Unit}" />
+                            <DataGridTextColumn Header="Supply Date" Binding="{Binding SupplyDate}" />
+                            <DataGridTextColumn Header="Expiry Date" Binding="{Binding ExpiryDate}" />
+                            <DataGridTextColumn Header="Purchase Price" Binding="{Binding PurchasePrice}"  IsReadOnly="True"/>
+                            <DataGridTextColumn Header="Selling Price" Binding="{Binding SellingPrice}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- Error Message -->
+                <Label Content="{Binding ErrorMessage}" Height="30" FontSize="15" Foreground="Red" HorizontalAlignment="Center" Margin="10"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <!-- Product Template -->
+        <DataTemplate x:Key="ProductTemplate">
+                <StackPanel DataContext="{StaticResource ProductVM}" Margin="10">
+                    <StackPanel.Resources>
+                        <localConverter:ProductConvert x:Key="ProductConvert" />
+                    </StackPanel.Resources>
+
+                    <!-- Form Fields -->
+                    <GroupBox Header="Product Details" Margin="0,0,0,10">
+                        <StackPanel Margin="10">
+                            <Label Content="Product Name" />
+                            <TextBox Name="txtProductName" Width="200" HorizontalAlignment="Left"
+                                 Text="{Binding ElementName=productGrid, Path=SelectedItem.ProductName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                            <Label Content="Barcode" />
+                            <TextBox Name="txtBarcode" Width="200" HorizontalAlignment="Left" Text="{Binding ElementName=productGrid, Path=SelectedItem.Barcode, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,10"/>
+                            <Label Content="Category" />
+                            <ComboBox Name="cbCategory" Width="200" HorizontalAlignment="Left"                           
+                                  DisplayMemberPath="CategoryName"
+                                  ItemsSource="{Binding Source={StaticResource CategoryVM}, Path=CategoryList}"
+                                  SelectedItem="{Binding ElementName=productGrid, Path=SelectedItem.Category}"
+                                  Margin="0,0,0,10"/>
+                            <Label Content="Manufacturer" />
+                            <ComboBox Name="cbManufacturer" Width="200" HorizontalAlignment="Left"
+                                  DisplayMemberPath="ManufacturerName"
+                                  ItemsSource="{Binding Source={StaticResource ManufacturerVM}, Path=ManufacturerList}" Margin="0,0,0,10"
+                                  SelectedItem="{Binding ElementName=productGrid, Path=SelectedItem.Manufacturer}"/>
+                        </StackPanel>
+                    </GroupBox>
+
+                    <!-- Buttons -->
+                    <StackPanel Margin="0,0,0,10">
+                        <Button Content="Adaugă" Command="{Binding AddCommand}" Margin="5">
+                            <Button.CommandParameter>
+                                <MultiBinding Converter="{StaticResource ProductConvert}">
+                                    <Binding ElementName="txtProductName" Path="Text"/>
+                                    <Binding ElementName="txtBarcode" Path="Text"/>
+                                    <Binding ElementName="cbCategory" Path="SelectedValue"/>
+                                    <Binding ElementName="cbManufacturer" Path="SelectedValue"/>
+                                </MultiBinding>
+                            </Button.CommandParameter>
+                        </Button>
+                        <Button Content="Modifică" Command="{Binding UpdateCommand}" CommandParameter="{Binding ElementName=productGrid, Path=SelectedItem}" Margin="5"/>
+                        <Button Content="Șterge" Command="{Binding DeleteCommand}" CommandParameter="{Binding ElementName=productGrid, Path=SelectedItem}" Margin="5"/>
+                    </StackPanel>
+
+                    <!-- DataGrid -->
+                    <GroupBox Header="Products List">
+                        <DataGrid Name="productGrid" Margin="10" AutoGenerateColumns="False" Height="250"
+                              ScrollViewer.VerticalScrollBarVisibility="Visible" ItemsSource="{Binding ProductList}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Product Name" Binding="{Binding ProductName}" />
+                                <DataGridTextColumn Header="Barcode" Binding="{Binding Barcode}" />
+                                <DataGridTextColumn Header="Category" Binding="{Binding Category.CategoryName}" />
+                                <DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer.ManufacturerName}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </GroupBox>
+
+                    <!-- Error Message -->
+                    <Label Name="lblMessage" Content="{Binding ErrorMessage}" Height="30" FontSize="15" Foreground="Red" HorizontalAlignment="Center" Margin="10"/>
+                </StackPanel>
+        </DataTemplate>
+
+        <!-- Receipt Template -->
+        <DataTemplate x:Key="ReceiptTemplate">
+            <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Padding="10" Margin="10">
+                <WrapPanel>
+                    <StackPanel Margin="0,0,0,10">
+                        <TextBlock>
+                    <Run Text="Receipt ID: " FontWeight="Bold"/>
+                    <Run Text="{Binding ReceiptID}"/>
+                        </TextBlock>
+                        <TextBlock>
+                    <Run Text="Date: " FontWeight="Bold"/>
+                    <Run Text="{Binding Date}"/>
+                        </TextBlock>
+                        <TextBlock>
+                    <Run Text="Cashier: " FontWeight="Bold"/>
+                    <Run Text="{Binding Cashier.UserName}"/>
+                        </TextBlock>
+                        <TextBlock>
+                    <Run Text="Total Amount: " FontWeight="Bold"/>
+                    <Run Text="{Binding TotalAmount}"/>
+                        </TextBlock>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="Delete" Command="{Binding DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" Width="75"/>
+                    </StackPanel>
+
+                    <Expander Header="Receipt Details" IsExpanded="False">
+                        <ItemsControl ItemsSource="{Binding ReceiptDetails}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="LightGray" BorderThickness="1" CornerRadius="5" Padding="10" Margin="5">
+                                        <StackPanel>
+                                            <TextBlock>
+                                        <Run Text="Product: " FontWeight="Bold"/>
+                                        <Run Text="{Binding Product.ProductName}"/>
+                                            </TextBlock>
+                                            <TextBlock>
+                                        <Run Text="Quantity: " FontWeight="Bold"/>
+                                        <Run Text="{Binding Quantity}"/>
+                                            </TextBlock>
+                                            <TextBlock>
+                                        <Run Text="Subtotal: " FontWeight="Bold"/>
+                                        <Run Text="{Binding Subtotal}"/>
+                                            </TextBlock>
+                                            <StackPanel Orientation="Horizontal" Margin="5,10,5,0">
+                                                <Button Content="Delete" Command="{Binding DeleteReceiptDetailCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" Width="75"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Expander>
+                </WrapPanel>
+            </Border>
+        </DataTemplate>
+
+
+
+        <!-- ReceiptDetail Template -->
+        <DataTemplate x:Key="ReceiptDetailsTemplate">
+            <StackPanel DataContext="{StaticResource ReceiptDetailVM}" Margin="10">
+                <StackPanel.Resources>
+                    <localConverter:ReceiptDetailConvert x:Key="ReceiptDetailConvert" />
+                </StackPanel.Resources>
+
+                <!-- Form Fields -->
+                <GroupBox Header="Receipt Detail" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <Label Content="Receipt" />
+                        <ComboBox x:Name="cbReceipt"
+                          Width="200"
+                          HorizontalAlignment="Left"
+                          DisplayMemberPath="ReceiptID"
+                          SelectedValuePath="ReceiptID"
+                          ItemsSource="{Binding Source={StaticResource ReceiptVM}, Path=ReceiptList}"
+                          SelectedValue="{Binding SelectedItem.ReceiptID, ElementName=receiptDetailGrid, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,0,0,10"/>
+                        <Label Content="Product" />
+                        <ComboBox x:Name="cbProduct"
+                          Width="200"
+                          HorizontalAlignment="Left"
+                          DisplayMemberPath="ProductName"
+                          SelectedValuePath="ProductID"
+                          ItemsSource="{Binding Source={StaticResource ProductVM}, Path=ProductList}"
+                          SelectedValue="{Binding SelectedItem.ProductID, ElementName=receiptDetailGrid, UpdateSourceTrigger=PropertyChanged}"
+                          Margin="0,0,0,10"/>
+                        <Label Content="Quantity" />
+                        <TextBox x:Name="quantityTextBox"
+                         Width="200"
+                         HorizontalAlignment="Left"
+                         Text="{Binding SelectedItem.Quantity, ElementName=receiptDetailGrid, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,10"/>
+                        <Label Content="Subtotal" />
+                        <xctk:DecimalUpDown x:Name="subtotalNumericUpDown"
+                        Value="{Binding SelectedItem.Subtotal, ElementName=receiptDetailGrid, UpdateSourceTrigger=PropertyChanged}"
+                        Width="200" Margin="0,0,0,10" />
+                        <CheckBox x:Name="isActiveCheckBox" IsChecked="{Binding SelectedItem.IsActive, ElementName=receiptDetailGrid}" Content="Is Active" Margin="0,0,0,10"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Buttons -->
+                <WrapPanel Margin="0,0,0,10">
+                    <Button Content="Add" Command="{Binding AddCommand}" Margin="5">
+                        <Button.CommandParameter>
+                            <MultiBinding Converter="{StaticResource ReceiptDetailConvert}">
+                                <Binding ElementName="cbReceipt" Path="SelectedValue"/>
+                                <Binding ElementName="cbProduct" Path="SelectedValue"/>
+                                <Binding ElementName="quantityTextBox" Path="Text"/>
+                                <Binding ElementName="subtotalNumericUpDown" Path="Value"/>
+                            </MultiBinding>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Content="Update" Command="{Binding UpdateCommand}" CommandParameter="{Binding SelectedItem, ElementName=receiptDetailGrid}" Margin="5"/>
+                    <Button Content="Delete" Command="{Binding DeleteCommand}" CommandParameter="{Binding SelectedItem, ElementName=receiptDetailGrid}" Margin="5"/>
+                </WrapPanel>
+
+                <!-- DataGrid -->
+                <GroupBox Header="Receipt Details List">
+                    <DataGrid x:Name="receiptDetailGrid" Margin="10" AutoGenerateColumns="False" Height="250"
+              ScrollViewer.VerticalScrollBarVisibility="Visible" ItemsSource="{Binding ReceiptDetailList}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Receipt ID" Binding="{Binding ReceiptID}" />
+                            <DataGridTextColumn Header="Product ID" Binding="{Binding ProductID}" />
+                            <DataGridTextColumn Header="Quantity" Binding="{Binding Quantity}" />
+                            <DataGridTextColumn Header="Subtotal" Binding="{Binding Subtotal}" />
+                            <DataGridCheckBoxColumn Header="Is Active" Binding="{Binding IsActive}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <!-- Error Message -->
+                <Label Content="{Binding ErrorMessage}" Height="30" FontSize="15" Foreground="Red" HorizontalAlignment="Center" Margin="10"/>
+            </StackPanel>
+        </DataTemplate>
+
+
+        <!-- User Template -->
+        <DataTemplate x:Key="UsernameTemplate">
+            <StackPanel DataContext="{StaticResource UsernameVM}" Margin="10" >
+                <StackPanel.Resources>
+                    <localConverter:UsernameConvert x:Key="UsernameConvert" />
+                </StackPanel.Resources>
+                <GroupBox Header="User Details" Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <Label Content="Username" />
+                        <TextBox x:Name="txtUsername" Text="{Binding ElementName=usernameGrid, Path=SelectedItem.UserName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="200" Margin="0,0,0,10"/>
+                        <Label Content="Password" />
+                        <PasswordBox x:Name="pwdPassword" Width="200" Margin="0,0,0,10"
+                             local:PasswordBoxHelper.BindPassword="True"
+                             local:PasswordBoxHelper.BoundPassword="{Binding ElementName=usernameGrid, Path=SelectedItem.Password, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Label Content="User Type" />
+                        <ComboBox x:Name="cmbUserType" Width="200" Margin="0,0,0,10"
+                                  SelectedValue="{Binding ElementName=usernameGrid, Path=SelectedItem.UserType, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedValuePath="Content">
+                            <ComboBoxItem Content="admin" />
+                            <ComboBoxItem Content="casier" />
+                        </ComboBox>
+                    </StackPanel>
+                </GroupBox>
+
+                <WrapPanel Margin="0,0,0,10">
+                    <Button Content="Adaugă" Command="{Binding AddCommand}" Margin="5">
+                        <Button.CommandParameter>
+                            <MultiBinding Converter="{StaticResource UsernameConvert}">
+                                <Binding ElementName="txtUsername" Path="Text"/>
+                                <Binding ElementName="pwdPassword" Path="(local:PasswordBoxHelper.BoundPassword)"/>
+                                <Binding ElementName="cmbUserType" Path="SelectedValue"/>
+                            </MultiBinding>
+                        </Button.CommandParameter>
+                    </Button>
+                    <Button Content="Modifică" Command="{Binding UpdateCommand}" CommandParameter="{Binding ElementName=usernameGrid, Path=SelectedItem}" Margin="5"/>
+                    <Button Content="Șterge" Command="{Binding DeleteCommand}" CommandParameter="{Binding ElementName=usernameGrid, Path=SelectedItem}" Margin="5"/>
+                </WrapPanel>
+
+                <GroupBox Header="Users List">
+                    <DataGrid Name="usernameGrid" Margin="10" AutoGenerateColumns="False" Height="250"
+                      ScrollViewer.VerticalScrollBarVisibility="Visible" ItemsSource="{Binding UsernameList}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Username" Binding="{Binding UserName}" />
+                            <DataGridTextColumn Header="User Type" Binding="{Binding UserType}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+
+                <Label Content="{Binding ErrorMessage}" Height="30" FontSize="15" Foreground="Red" HorizontalAlignment="Center" Margin="10"/>
+            </StackPanel>
+        </DataTemplate>
+    </Application.Resources>
+</Application>
+
